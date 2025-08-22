@@ -105,19 +105,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const connectData = await connectResponse.json();
-    console.log('Connect token criado com sucesso:', {
-      tokenPresent: !!connectData.connectToken,
-      tokenLength: connectData.connectToken?.length || 0
+    console.log('Resposta completa do connect token:', JSON.stringify(connectData, null, 2));
+    
+    // O Pluggy pode retornar o token em diferentes campos
+    const connectToken = connectData.connectToken || connectData.connect_token || connectData.token;
+    
+    console.log('Connect token extraído:', {
+      tokenPresent: !!connectToken,
+      tokenLength: connectToken?.length || 0,
+      availableFields: Object.keys(connectData)
     });
     
+    if (!connectToken) {
+      console.error('Connect token não encontrado na resposta:', connectData);
+      throw new Error('Connect token não retornado pela API do Pluggy');
+    }
+    
     // URL do Pluggy Connect
-    const connectUrl = `https://connect.pluggy.ai/?connectToken=${connectData.connectToken}`;
+    const connectUrl = `https://connect.pluggy.ai/?connectToken=${connectToken}`;
 
     console.log('URL final do Pluggy Connect:', connectUrl);
 
     res.status(200).json({
       connectUrl,
-      connectToken: connectData.connectToken,
+      connectToken: connectToken,
     });
   } catch (error) {
     console.error('Erro ao conectar com Pluggy:', error);

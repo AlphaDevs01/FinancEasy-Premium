@@ -159,8 +159,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         connectToken: {
           status: connectResponse.status,
-          tokenCreated: !!connectData?.connectToken,
-          token: connectData?.connectToken ? 'Presente' : 'Ausente'
+          tokenCreated: !!(connectData?.connectToken || connectData?.connect_token || connectData?.token),
+          token: (connectData?.connectToken || connectData?.connect_token || connectData?.token) ? 'Presente' : 'Ausente',
+          responseFields: connectData ? Object.keys(connectData) : []
         }
       }
     });
